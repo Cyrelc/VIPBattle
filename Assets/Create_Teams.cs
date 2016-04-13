@@ -26,8 +26,10 @@ public class Create_Teams : MonoBehaviour {
 	void Start () {
         if (numTeams > 4) numTeams = 4;                         //cannot support more than four teams. Base game is designed for only two, this is just to prevent accidents
         teamRosters = new List<Dictionary<int, Transform>>();   //initialize teamRoster list
-        for (int j = 0; j < numTeams; j++)                      //initialize all state trackers for VIP visibility
+        for (int j = 0; j < numTeams; j++) {                     //initialize all state trackers for VIP visibility
             visibleVIPs[j] = new Dictionary<Transform, bool>();
+            callingForHelp[j] = new Dictionary<int, Transform>();
+        }
         for (int i = 0; i < numTeams; i++) {
             teamRosters.Add(new Dictionary<int, Transform>());  //initialize the list of players for this team
             visibleEnemies.Add(new Dictionary<int,Transform>());//initialize the list of visible enemy players for this team
