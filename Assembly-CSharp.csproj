@@ -6,7 +6,7 @@
     <ProductVersion>10.0.20506</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <RootNamespace></RootNamespace>
-    <ProjectGuid>{E83E7009-AA5D-53C5-DB81-C4F963AC1B14}</ProjectGuid>
+    <ProjectGuid>{C6A5B2E1-8C88-D400-F62A-3599F432959C}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <AssemblyName>Assembly-CSharp</AssemblyName>
@@ -45,7 +45,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+     <Compile Include="Assets\AILogic.cs" />
+     <Compile Include="Assets\Create_Teams.cs" />
      <Compile Include="Assets\FSM1.cs" />
+     <Compile Include="Assets\Interaction.cs" />
+     <Compile Include="Assets\LineOfSight.cs" />
  <Reference Include="UnityEngine.UI">
  <HintPath>/Applications/Unity/Unity.app/Contents/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
  </Reference>
