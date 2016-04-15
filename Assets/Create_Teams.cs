@@ -43,7 +43,7 @@ public class Create_Teams : MonoBehaviour {
 	}
 	
 	// Update is called once per frame
-	void Update () {
+	void FixedUpdate () {
         enemiesInSight();   //calculates, for each team, which enemies are in line of sight (therefore can be taken into account for swarm movement)
     }
 
@@ -53,7 +53,6 @@ public class Create_Teams : MonoBehaviour {
         v.tag = "VIP" + i.ToString();                                                                   //set the VIP's tag
         VIPs[i] = v;
         for (int j = 0; j < numTeams; j++) {
-//            Debug.Log(j);
             visibleVIPs[j].Add(v, false);
         }
     }
@@ -65,18 +64,17 @@ public class Create_Teams : MonoBehaviour {
         myPosition.z += Random.Range(-startRadius, startRadius);
         Transform p = (Transform)Instantiate(playerPrefab, myPosition, Quaternion.identity); //instantiate the prefab
         p.GetComponent<Renderer>().material.color = teamColours[team]; //set the color depending on team
-        p.GetComponent<AILogic>().teamID = team;   //set the teamID so they can identify friendlies
-        p.GetComponent<AILogic>().myID = ID;     //set the personal ID, so they do not weight themselves in the attraction to friendlies
-        p.tag = "team" + team.ToString();          //set the tag of the new player
+        p.GetComponent<AILogic>().teamID = team;    //set the teamID so they can identify friendlies
+        p.GetComponent<AILogic>().myID = ID;        //set the personal ID, so they do not weight themselves in the attraction to friendlies
+        p.tag = "team" + team.ToString();           //set the tag of the new player
         teamRosters[team].Add(ID, p);               //add the player to the gamewide roster
 //        Debug.Log("Player " + ID + " created and added to team " + team);
     }
 
-    public int fieldOfViewAngle = 110;
+    public int fieldOfViewAngle = 150;
     public int viewDistance = 70;
 
     private void enemiesInSight() {
-
         for (int i = 0; i < numTeams; i++) {                                                //for each team
             visibleEnemies[i].Clear();
             foreach (KeyValuePair<int, Transform> player in teamRosters[i]) {               //for each player on that team
@@ -93,16 +91,17 @@ public class Create_Teams : MonoBehaviour {
     }
 
     private void myLineOfSight(Transform player, Transform enemy) {
-        string enemyTag = enemy.tag;
+        string enemyTag = enemy.gameObject.tag;
         int playerTeamID = player.GetComponent<AILogic>().teamID;
-        Vector3 direction = player.position - enemy.position;               //calculate the distance to the enemy
+        Vector3 direction = enemy.position - player.position;               //calculate the distance to the enemy
         if (direction.magnitude < viewDistance) {                           //if the enemy is within range
-            float angle = Vector3.Angle(direction, transform.forward);      //calculate the angle between the way player is looking, and the position of the enemy
+            float angle = Vector3.Angle(player.forward, direction);         //calculate the angle between the way player is looking, and the position of the enemy
             if (angle < fieldOfViewAngle / 2) {                             //if the enemy is within field of view
                 RaycastHit hit;                                             //create a raycast
-                if (Physics.Raycast(transform.position + transform.up, direction.normalized, out hit, viewDistance)) {  //shoot the ray towards the enemy
+                if (Physics.Raycast(player.position, direction.normalized, out hit, viewDistance * 1.1f)) {  //shoot the ray towards the enemy
                     if (hit.transform.tag.Equals(enemyTag)) {               //if the ray hits the player on the enemy team
                         if (enemy.tag.Contains("VIP")) {
+                            Debug.Log("VIP located");
                             visibleVIPs[playerTeamID][enemy] = true;
                             return;
                         } 

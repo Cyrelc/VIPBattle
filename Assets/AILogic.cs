@@ -7,7 +7,6 @@ public class AILogic : MonoBehaviour {
     //this players team ID and individual ID to identify himself and his friendlies
     public int teamID, myID;
     //the heading scale speed indicates how much to scale the heading by
-//    public float friendAttract = 1f, enemyAttract = 1f, friendVIPAttract = 1f, enemyVIPAttract = 1f, helpAttract = 1f, wallRepel = 10f;
 
     public float collisionAvoidanceWeight = 0.025f; //the weighting to place on avoiding collisions between other friendlies, and between terrain objects (Walls)
     public float collisionAvoidanceRadius = 3f;     //the minimum radius to keep between yourself and the nearest ally or Wall
@@ -28,7 +27,7 @@ public class AILogic : MonoBehaviour {
     Vector3 toFriends, toEnemies, toFriendlyVIP, toEnemyVIP, awayFromWalls, needHelp;
     Vector3 velocity;
 
-    public float friendWeight = 1f, enemyWeight = 1f, friendlyVIPWeight = 1f, enemyVIPWeight = 1f, wallWeight = 1f, helpWeight = 1f;
+    public float friendWeight = 1f, enemyWeight = 1f, friendlyVIPWeight = 0.025f, enemyVIPWeight = 1f, wallWeight = 1f, helpWeight = 1f;
 
     //an enum listing all of the possible states that the player can be in
     public enum AIStates {searching, callForHelp, attacking, retreating, defending};
@@ -71,7 +70,7 @@ public class AILogic : MonoBehaviour {
             return;
         }
         Gizmos.color = (Color.Lerp(Color.yellow, Color.blue, (1.0f * this.teamID / 3)));
-        Gizmos.DrawRay(transform.position, transform.forward);
+        Gizmos.DrawRay(transform.position, transform.forward*10);
         Gizmos.color = Color.red;
         Gizmos.DrawRay(transform.position, toEnemies);
         Gizmos.color = Color.green;
@@ -81,7 +80,6 @@ public class AILogic : MonoBehaviour {
         Gizmos.color = Color.black;
         Gizmos.DrawRay(transform.position, awayFromWalls);
     }
-
 
     private Dictionary<int, Transform> enemyVIPSSpotted() {
         Dictionary<int, Transform> canSee = new Dictionary<int, Transform>();
@@ -136,7 +134,6 @@ public class AILogic : MonoBehaviour {
 
     private Vector3 findEnemyVector() {
         Vector3 enemyCohesionSum = Vector3.zero;
-        int enemyCohesionCount = 0;
 
         foreach (KeyValuePair<int, Transform> enemy in controller.visibleEnemies[teamID]) {
             float distance = Vector3.Distance(transform.position, enemy.Value.position);
@@ -157,8 +154,6 @@ public class AILogic : MonoBehaviour {
                 wallWeight += 0.01f;
         }
         wallSum = wallObjects.Count > 0 ? wallSum / wallObjects.Count : wallSum;
-        if (teamID == 0 && myID == 0)
-            Debug.Log(wallSum);
         return wallSum.normalized;
     }
 
@@ -233,44 +228,4 @@ public class AILogic : MonoBehaviour {
         return (v.magnitude > max) ? v.normalized * max : v;
     }
 
-    /// <summary>
-    /// Finds the heading by targets cluster of postions of gameobjects. 
-    /// Higher weight to closer targets, by linear scale.
-    /// </summary>
-    /// <returns>The unit heading to move towards from critter transform.</returns>
-    /// <param name="targets">Targets.</param>
-    public Vector3 findHeadingByTargetsLinear(Dictionary<int, Transform> targets) {
-
-        Vector3 selfPos = transform.position;
-        //	case where no targets, then heading forward.
-        if (targets.Count == 0) {
-            return transform.forward;
-        }
-
-        Dictionary<int, float> distances = new Dictionary<int, float>(targets.Count);
-        float maxDis = 0;
-        //float maxDis = float.MaxValue;
-        //	
-        foreach (int key in targets.Keys) {
-            float dis = Vector3.Distance(selfPos, targets[key].position);
-            distances.Add(key, dis);
-            maxDis = Mathf.Max(maxDis, dis);
-        }
-        //	find weighted heading. Closer targets have higher pull.
-        //	Inital heading is self forward as extra direction.
-        float sum = maxDis - 1;
-        Vector3 headingWeighted = transform.forward;
-        //for (int i = 0; i < targets.Count; i++) {
-        foreach (int key in targets.Keys) {
-            // 
-            float invertDistance = (maxDis - distances[key]);
-
-            headingWeighted += ((targets[key].position - selfPos) * invertDistance);
-            sum += invertDistance;
-            //print ("d: " + invertDistance);
-        }
-        //print ("sum: " + sum);
-        headingWeighted /= ((sum == 0) ? 1 : sum);
-        return headingWeighted;
-    }
 }
