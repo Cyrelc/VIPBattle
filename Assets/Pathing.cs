@@ -5,9 +5,10 @@ using System.Collections.Generic;
 /*	cmpt 430
  * 	Charles L.
  * 
- * impliments Looped pre-defined smooth curve path around the terrain.
+ * impliments Looped path. Set it a list of GOs to follow and will update
+ * the heading to follow by command.
  * 
- * Add script to GO that paths. Add path nodes to list order. Call GetPathDirectionNow()
+ * Add this script to GO that paths. Add path nodes to list order. Call GetPathDirectionNow()
  * for the heading to the next node.  This script will auto switch to the next node at proximity.
  * 
  * Set the set of gameobjects to follow (with no collision), it will return direction
@@ -40,6 +41,7 @@ public class Pathing : MonoBehaviour
 
 
 	int currentNode = 0;
+	int nodeDistance = 0;
 	//Rigidbody selfRb;
 	Transform selfTrans;
 
@@ -53,6 +55,7 @@ public class Pathing : MonoBehaviour
 		}*/
 
 		selfTrans = GetComponent<Transform> ();
+		nodeDistance = float.MaxValue;
 
 	}
 	
@@ -77,6 +80,7 @@ public class Pathing : MonoBehaviour
 
 		// node change
 		float distanceCheck = Vector3.Distance (flatTarget, selfPos);
+		nodeDistance = distanceCheck;
 		if (distanceCheck <= nodeDistanceChange) {
 			if (currentNode + 1 <= pathPoints.Count - 1) {
 				currentNode++;
@@ -140,5 +144,9 @@ public class Pathing : MonoBehaviour
 	public Vector3 GetPathDirectionNow ()
 	{
 		return pathDirection;
+	}
+
+	public float GetNodeDistance(){
+		return nodeDistance;
 	}
 }
