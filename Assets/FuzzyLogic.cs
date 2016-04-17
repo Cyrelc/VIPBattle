@@ -30,10 +30,7 @@ public class FuzzyLogic : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
         healthConfidence = -grade(interaction.hp, healthRunAway, healthSafeToAttack);                      //calculate fuzzy value for player health
-//        Debug.Log("healthConfidence: " + healthConfidence);
         logic.enemyWeight = confidence() * healthConfidence;                                                //calculate enemyWeight pull value (see AILogic)
-//        Debug.Log(confidence());
-//        Debug.Log("enemyWeight currently set to: " + logic.enemyWeight);
         int VIPDefenderCount = 0, VIPAttackerCount = 0;                                                     //counters for the number of people defending/attacking your VIP
         /* Count the number of enemies threatening for VIP, and the number of allies defending him
          */

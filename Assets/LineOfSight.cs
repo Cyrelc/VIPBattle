@@ -14,7 +14,7 @@ public class LineOfSight : MonoBehaviour {
 
 	void OnTriggerEnter(Collider other) {
 		if (other.tag.Equals("Wall")) {
-			myParent.wallObjects.Add(other.GetInstanceID(), other.transform);
+			myParent.wallObjects.Add(other.GetInstanceID(), other.gameObject);
 		}
 	}
 
