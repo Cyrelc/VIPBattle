@@ -70,7 +70,7 @@ public class AILogic : MonoBehaviour
 	{
 		toFriends = findFriendlyVector ();                                       //find the heading towards allies
 		toEnemies = findEnemyVector ();                                          //find the heading towards visible enemies ONLY
-		awayFromWalls = -findWallAvoidanceVector ();                             //repel from walls within range
+		awayFromWalls = findWallAvoidanceVector ();                             //repel from walls within range
 		// pathing node depends on pathing script. This case checks if it exists.
 		if (pathController != null) {
 			pathNodeHeading = pathController.GetPathDirectionNow ();
@@ -91,7 +91,7 @@ public class AILogic : MonoBehaviour
 		float[] combinedWeights = {
 			friendWeight,
 			enemyWeight,
-			wallWeight,
+			-wallWeight,
 			friendlyVIPWeight,
 			enemyVIPWeight,
 			helpWeight,
@@ -195,7 +195,8 @@ public class AILogic : MonoBehaviour
 		Vector3 wallSum = Vector3.zero;
 
 		foreach (KeyValuePair<int, Transform> wall in wallObjects) {
-			wallSum += transform.position - wall.Value.position;
+            float distance = Vector3.Distance(transform.position, wall.Value.position);
+            wallSum += (1/distance) * (transform.position - wall.Value.position);
 			if ((transform.position - wall.Value.position).magnitude < 1)
 				wallWeight += 0.01f;
 		}
