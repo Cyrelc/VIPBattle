@@ -44,7 +44,7 @@ public class AILogic : MonoBehaviour
 	Vector3 toFriends, toEnemies, toFriendlyVIP, toEnemyVIP, awayFromWalls, needHelp, pathNodeHeading;
 	public Vector3 velocity;
 
-	public float friendWeight = 1f, enemyWeight = 1f, friendlyVIPWeight = 0.025f, enemyVIPWeight = 1f, wallWeight = 1f, helpWeight = 1f, pathWeight = 0.0f;
+	public float friendWeight = 0.5f, enemyWeight = 1f, friendlyVIPWeight = 0.025f, enemyVIPWeight = 1f, wallWeight = 1f, helpWeight = 1f, pathWeight = 0.0f;
 
 	//creates a Dictionary to track walls which should be avoided
 	public Dictionary<int, Transform> wallObjects = new Dictionary<int, Transform> ();
