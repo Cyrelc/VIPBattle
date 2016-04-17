@@ -36,9 +36,10 @@ public class AILogic : MonoBehaviour
 
 	//maximum, minimum, and base speeds. Base speed is random, so some boids are just naturally faster than others as a base
 	public static float minSpeed = 1, maxSpeed = 400, baseSpeed = 10;
+	public static float accelerationForce = 10f, headingScaleSpeed = 10;
 
 	//maximum rotation values
-	public static float maxRotationSpeed = 10;
+	public static float maxRotationSpeed = 10, rotationSpeed = 30;
 
 	//Vectors calculated towards or away from all relevent attractors
 	Vector3 toFriends, toEnemies, toFriendlyVIP, toEnemyVIP, awayFromWalls, needHelp, pathNodeHeading;
@@ -51,6 +52,7 @@ public class AILogic : MonoBehaviour
 	//gives constant access to the controller and subsequently all gamewide variables
 	private Create_Teams controller;
 	private Pathing pathController;
+	private Rigidbody	rb;
 
 	// Use this for initialization
 	void Start ()
@@ -63,10 +65,11 @@ public class AILogic : MonoBehaviour
 		if (pathController == null) {
 			pathWeight = 0;
 		}
+		rb = GetComponent<Rigidbody> ();
 	}
 
 	// Update is called once per frame
-	void Update ()
+	void FixedUpdate ()
 	{
 		toFriends = findFriendlyVector ();                                       //find the heading towards allies
 		toEnemies = findEnemyVector ();                                          //find the heading towards visible enemies ONLY
@@ -98,12 +101,29 @@ public class AILogic : MonoBehaviour
 			pathWeight
 		};
 
-		Vector3 newVelocity = combinedHeading (combinedHeadings, combinedWeights);
+		Vector3 newHeading = combinedHeading (combinedHeadings, combinedWeights);
 		//        Debug.Log(newVelocity);
-		newVelocity.y = 0;
-		transform.rotation = Quaternion.LookRotation (newVelocity);
-		transform.position += newVelocity * Time.deltaTime;
+		//newVelocity.y = 0;
+		//transform.rotation = Quaternion.LookRotation (newVelocity);
+		//transform.position += newVelocity * Time.fixedDeltaTime * baseSpeed;
 		//        transform.forward = (transform.position - toFriends).normalized * Time.deltaTime * minSpeed;
+	
+		// critter speed is controlled by heading magnatude, and it is clamp within this range.
+		float headingMagnitude	=	newHeading.magnitude * baseSpeed;
+		headingMagnitude = Mathf.Clamp (headingMagnitude, minSpeed, maxSpeed);
+		newHeading.y	=	0;
+
+		// movement
+		Vector3 smoothHeading = Vector3.Slerp (transform.forward, newHeading, Time.fixedDeltaTime * rotationSpeed);
+		rb.transform.LookAt (transform.position + smoothHeading);
+		rb.AddForce (newHeading.normalized * headingMagnitude * accelerationForce * Time.fixedDeltaTime, ForceMode.Acceleration);
+		// speed cap
+		if (rb.velocity.magnitude > maxSpeed) {
+			float y = rb.velocity.y;
+			Vector3 tempV3 = rb.velocity.normalized * maxSpeed;
+			tempV3.y = y;
+			rb.velocity = tempV3;
+		}
 	}
 
 	void OnDrawGizmos ()
@@ -182,7 +202,7 @@ public class AILogic : MonoBehaviour
 
 		foreach (KeyValuePair<int, Transform> enemy in controller.visibleEnemies[teamID]) {
 			float distance = Vector3.Distance (transform.position, enemy.Value.position);
-            enemyCohesionSum += (1/distance) * (transform.position - enemy.Value.position);
+			enemyCohesionSum += (1 / distance) * (transform.position - enemy.Value.position);
 			//define behaviour here, depending on size of enemy group, proximity, size of local force, etc.
 		}
 
@@ -195,8 +215,8 @@ public class AILogic : MonoBehaviour
 		Vector3 wallSum = Vector3.zero;
 
 		foreach (KeyValuePair<int, Transform> wall in wallObjects) {
-            float distance = Vector3.Distance(transform.position, wall.Value.position);
-            wallSum += (1/distance) * (transform.position - wall.Value.position);
+			float distance = Vector3.Distance (transform.position, wall.Value.position);
+			wallSum += (1 / distance) * (transform.position - wall.Value.position);
 			if ((transform.position - wall.Value.position).magnitude < 1)
 				wallWeight += 0.01f;
 		}
@@ -270,7 +290,7 @@ public class AILogic : MonoBehaviour
 			}
 
 			steer = targetDirection - GetComponent<Rigidbody> ().velocity;
-			steer = Limit (steer, maxRotationSpeed * Time.deltaTime);
+			steer = Limit (steer, maxRotationSpeed * Time.fixedDeltaTime);
 		}
 
 		return steer;
