@@ -301,4 +301,49 @@ public class AILogic : MonoBehaviour
 		return (v.magnitude > max) ? v.normalized * max : v;
 	}
 
+	/// <summary>
+	/// Finds the heading by targets cluster of postions of gameobjects. 
+	/// Higher weight to closer targets, by linear scale.
+	/// </summary>
+	/// <returns>The unit heading to move towards from critter transform.</returns>
+	/// <param name="targets">Targets.</param>
+	public Vector3 findHeadingByTargetsLinear (Dictionary<int,GameObject> targets)
+	{
+		Vector3 selfPos	= transform.position;
+		//	case where no targets, then heading forward.
+		if (targets.Count == 0) {
+			return transform.forward;
+		}
+
+		Dictionary<int,float> distances	= new Dictionary<int,float> (targets.Count);
+		float maxDis = 0;
+		//float maxDis = float.MaxValue;
+
+		//	
+		foreach (int key in targets.Keys) {
+			float dis = Vector3.Distance (selfPos, targets [key].transform.position);
+			distances.Add (key, dis);
+			maxDis = Mathf.Max (maxDis, dis);
+		}
+		//	find weighted heading. Closer targets have higher pull.
+		//	Inital heading is self forward as extra direction.
+		float sum = maxDis - 1;
+		Vector3 headingWeighted = transform.forward;
+		//for (int i = 0; i < targets.Count; i++) {
+		foreach (int key in targets.Keys) {
+			// 
+			float invertDistance = (maxDis - distances [key]);
+
+
+			headingWeighted += ((targets [key].transform.position - selfPos) * invertDistance);
+			sum += invertDistance;
+			//print ("d: " + invertDistance);
+
+		}
+		//print ("sum: " + sum);
+		headingWeighted /= ((sum == 0) ? 1 : sum);
+		return headingWeighted;
+	}
+
+
 }
