@@ -35,7 +35,7 @@ public class AILogic : MonoBehaviour
 	//the radius in which to check the location of your allies, this may increase over time while in searching mode
 
 	//maximum, minimum, and base speeds. Base speed is random, so some boids are just naturally faster than others as a base
-	public static float minSpeed = 1, maxSpeed = 400, baseSpeed = Random.Range (2, 6);
+	public static float minSpeed = 1, maxSpeed = 400, baseSpeed = 10;
 
 	//maximum rotation values
 	public static float maxRotationSpeed = 10;
@@ -117,8 +117,8 @@ public class AILogic : MonoBehaviour
 		Gizmos.DrawRay (transform.position, toEnemies);
 		Gizmos.color = Color.green;
 		Gizmos.DrawRay (transform.position, toFriends);
-		Gizmos.color = Color.blue;
-		Gizmos.DrawRay (transform.position, toFriendlyVIP);
+//		Gizmos.color = Color.blue;
+//		Gizmos.DrawRay (transform.position, toFriendlyVIP);
 		Gizmos.color = Color.black;
 		Gizmos.DrawRay (transform.position, awayFromWalls);
 	}

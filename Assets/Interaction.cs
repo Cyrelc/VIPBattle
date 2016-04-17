@@ -14,7 +14,7 @@ public class Interaction : MonoBehaviour {
 		teamID = transform.GetComponent<AILogic> ().teamID;
 		myID = transform.GetComponent<AILogic> ().myID;
 		AssignRange ();
-		hp = 10;
+		hp = 15;
 		damage = 2;
 		target = null;
 	}
