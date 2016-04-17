@@ -8,6 +8,8 @@ using System.Collections.Generic;
  * impliments Looped path. Set it a list of GOs to follow and will update
  * the heading to follow by command.
  * 
+ * Recommend smooth pathing by rigidbody add force accel.  (Accel andSpeed capping code ins provided here).
+ * 
  * Add this script to GO that paths. Add path nodes to list order. Call GetPathDirectionNow()
  * for the heading to the next node.  This script will auto switch to the next node at proximity.
  * 
@@ -20,7 +22,7 @@ using System.Collections.Generic;
 public class Pathing : MonoBehaviour
 {
 	/// <summary>
-	/// The path points, set set of non-collider objects in the editor.
+	/// The path points, set of non-collider objects in the scene. Can be scripted.
 	/// </summary>
 	public List<GameObject> pathPoints = new List<GameObject> ();
 
@@ -41,7 +43,7 @@ public class Pathing : MonoBehaviour
 
 
 	int currentNode = 0;
-	int nodeDistance = 0;
+	float nodeDistance = 0;
 	//Rigidbody selfRb;
 	Transform selfTrans;
 
@@ -65,7 +67,7 @@ public class Pathing : MonoBehaviour
 		Vector3 selfPos = selfTrans.position;
 		// do nothing if path is not defined.
 		if (pathPoints.Count == 0) {
-			print ("not path set given");
+//			print ("not path set given");
 			pathDirection = selfPos;
 			return;
 		}
@@ -90,15 +92,11 @@ public class Pathing : MonoBehaviour
 		}
 
 
-		/* Final motor control.
-		 * Place override code here. Or set the script off.
-		 */
-
 		Vector3 headTowards = posTarget - selfPos;
 		pathDirection = headTowards.normalized;
 
 		/*
-		// demo code. remove
+		// demo  Motor code.
 		Rigidbody rb = GetComponent<Rigidbody>();
 		rb.AddForce (GetPathDirectionNow () * accelerationForce * Time.fixedDeltaTime, ForceMode.Acceleration);
 		// speed cap
