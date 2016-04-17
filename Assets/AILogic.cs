@@ -29,7 +29,7 @@ public class AILogic : MonoBehaviour
 	public float groupDirectionRadius = 6f;
 	//the radius within which to detect what direction your allies are moving
 
-	public float groupCohesionWeight = 1f;
+	public float groupCohesionWeight = .5f;
 	//the weight to place on staying with the group. This will likely decrease over time while in searching mode
 	public float groupCohesionRadius = 6f;
 	//the radius in which to check the location of your allies, this may increase over time while in searching mode
@@ -46,18 +46,6 @@ public class AILogic : MonoBehaviour
 
 	public float friendWeight = 1f, enemyWeight = 1f, friendlyVIPWeight = 0.025f, enemyVIPWeight = 1f, wallWeight = 1f, helpWeight = 1f, pathWeight = 0.0f;
 
-	//an enum listing all of the possible states that the player can be in
-	public enum AIStates
-	{
-		searching,
-		callForHelp,
-		attacking,
-		retreating,
-		defending}
-
-	;
-	//the current state that this player is in
-	public AIStates playerState;
 	//creates a Dictionary to track walls which should be avoided
 	public Dictionary<int, Transform> wallObjects = new Dictionary<int, Transform> ();
 	//gives constant access to the controller and subsequently all gamewide variables
@@ -68,7 +56,6 @@ public class AILogic : MonoBehaviour
 	void Start ()
 	{
 		velocity = Vector3.zero;
-		playerState = AIStates.searching;
 		controller = GameObject.Find ("controller").GetComponent<Create_Teams> ();
 		// path controller
 		pathController = GetComponent<Pathing> ();
@@ -195,7 +182,7 @@ public class AILogic : MonoBehaviour
 
 		foreach (KeyValuePair<int, Transform> enemy in controller.visibleEnemies[teamID]) {
 			float distance = Vector3.Distance (transform.position, enemy.Value.position);
-
+            enemyCohesionSum += (1/distance) * (transform.position - enemy.Value.position);
 			//define behaviour here, depending on size of enemy group, proximity, size of local force, etc.
 		}
 
