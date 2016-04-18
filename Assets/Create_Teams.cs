@@ -16,7 +16,8 @@ public class Create_Teams : MonoBehaviour {
     public Vector3[] teamStartPositions = new Vector3[2];
     public Color[] teamColours = new[] { Color.red, Color.blue, Color.green, Color.yellow };
     public Transform playerPrefab, VIPPrefab;
-    public Transform[] VIPs = new Transform[4];
+    //public Transform[] VIPs = new Transform[4];
+	public List<Transform> VIPs = new List<Transform>();
     public List<Dictionary<int, Transform>> teamRosters;
     public Dictionary<int, Transform>[] callingForHelp = new Dictionary<int, Transform>[4];
     public Dictionary<Transform, bool>[] visibleVIPs = new Dictionary<Transform, bool>[4];
@@ -45,6 +46,10 @@ public class Create_Teams : MonoBehaviour {
 	// Update is called once per frame
 	void FixedUpdate () {
         enemiesInSight();   //calculates, for each team, which enemies are in line of sight (therefore can be taken into account for swarm movement)
+		if (VIPs.Count <= 1) {
+			Debug.Log ("Game ended");
+			Application.Quit ();
+		}
     }
 
 	private void createVIP (int i)
@@ -113,16 +118,16 @@ public class Create_Teams : MonoBehaviour {
                 RaycastHit hit;                                             //create a raycast
                 if (Physics.Raycast(player.position, direction.normalized, out hit, viewDistance * 1.1f)) {  //shoot the ray towards the enemy
                     if (hit.transform.tag.Equals(enemyTag)) {               //if the ray hits the player on the enemy team
-                        if (enemy.tag.Contains("VIP")) {
-                            Debug.Log("VIP located");
-                            visibleVIPs[playerTeamID][enemy] = true;
-                            return;
-                        } 
-                        else { 
+                        //if (enemy.tag.Contains("VIP")) {
+                          //  Debug.Log("VIP located");
+                          //  visibleVIPs[playerTeamID][enemy] = true;
+                           // return;
+                        //} 
+                        //else { 
                             int key = hit.transform.GetComponent<AILogic>().myID;
                             if (!visibleEnemies[playerTeamID].ContainsKey(key)) {
                                 visibleEnemies[playerTeamID].Add(key, hit.transform);
-                            }
+                          //  }
                         }
                     }
                 }
