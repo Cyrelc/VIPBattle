@@ -48,7 +48,7 @@ public class AILogic : MonoBehaviour
 	public float friendWeight = 0.5f, enemyWeight = 1f, friendlyVIPWeight = 0.025f, enemyVIPWeight = 1f, wallWeight = 1f, helpWeight = 1f, pathWeight = 2f;
 
 	//creates a Dictionary to track walls which should be avoided
-	public Dictionary<int, Transform> wallObjects = new Dictionary<int, Transform> ();
+	public Dictionary<int, GameObject> wallObjects = new Dictionary<int, GameObject> ();
 	//gives constant access to the controller and subsequently all gamewide variables
 	private Create_Teams controller;
 	private Pathing pathController;
@@ -73,7 +73,7 @@ public class AILogic : MonoBehaviour
 	{
 		toFriends = findFriendlyVector ();                                       //find the heading towards allies
 		toEnemies = findEnemyVector ();                                          //find the heading towards visible enemies ONLY
-		awayFromWalls = findWallAvoidanceVector ();                             //repel from walls within range
+		awayFromWalls = findHeadingByTargetsLinear (wallObjects);                             //repel from walls within range
 		// pathing node depends on pathing script. This case checks if it exists.
 		if (pathController != null) {
 			pathNodeHeading = pathController.GetPathDirectionNow ();
@@ -102,13 +102,13 @@ public class AILogic : MonoBehaviour
 		};
 
 		Vector3 newHeading = combinedHeading (combinedHeadings, combinedWeights);
-		//        Debug.Log(newVelocity);
+		//Debug.Log(newVelocity);
 		//newVelocity.y = 0;
 		//transform.rotation = Quaternion.LookRotation (newVelocity);
 		//transform.position += newVelocity * Time.fixedDeltaTime * baseSpeed;
 		//        transform.forward = (transform.position - toFriends).normalized * Time.deltaTime * minSpeed;
 	
-		// critter speed is controlled by heading magnatude, and it is clamp within this range.
+		// critter speed is controlled by heading magnitude, and it is clamped within this range.
 		float headingMagnitude	=	newHeading.magnitude * baseSpeed;
 		headingMagnitude = Mathf.Clamp (headingMagnitude, minSpeed, maxSpeed);
 		newHeading.y	=	0;
@@ -206,7 +206,7 @@ public class AILogic : MonoBehaviour
 			//define behaviour here, depending on size of enemy group, proximity, size of local force, etc.
 		}
 
-		return Vector3.zero;
+		return enemyCohesionSum;
 	}
 
 	private Vector3 findWallAvoidanceVector ()
@@ -214,14 +214,14 @@ public class AILogic : MonoBehaviour
 
 		Vector3 wallSum = Vector3.zero;
 
-		foreach (KeyValuePair<int, Transform> wall in wallObjects) {
-			float distance = Vector3.Distance (transform.position, wall.Value.position);
-			wallSum += (1 / distance) * (transform.position - wall.Value.position);
-			if ((transform.position - wall.Value.position).magnitude < 1)
+		foreach (KeyValuePair<int, GameObject> wall in wallObjects) {
+			float distance = Vector3.Distance (transform.position, wall.Value.transform.position);
+			wallSum += (1 / distance) * (wall.Value.transform.position - transform.position);
+			if ((transform.position - wall.Value.transform.position).magnitude < 1)
 				wallWeight += 0.01f;
 		}
 		wallSum = wallObjects.Count > 0 ? wallSum / wallObjects.Count : wallSum;
-		return wallSum.normalized;
+		return wallSum;
 	}
 
 	private Vector3 findCallingForHelpVector ()
@@ -344,6 +344,4 @@ public class AILogic : MonoBehaviour
 		headingWeighted /= ((sum == 0) ? 1 : sum);
 		return headingWeighted;
 	}
-
-
 }
