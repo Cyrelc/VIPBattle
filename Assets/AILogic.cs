@@ -45,7 +45,7 @@ public class AILogic : MonoBehaviour
 	Vector3 toFriends, toEnemies, toFriendlyVIP, toEnemyVIP, awayFromWalls, needHelp, pathNodeHeading;
 	public Vector3 velocity;
 
-	public float friendWeight = 0.5f, enemyWeight = 1f, friendlyVIPWeight = 0.025f, enemyVIPWeight = 1f, wallWeight = -0.5f, helpWeight = 1f, pathWeight = 2f;
+	public float friendWeight = 0.5f, enemyWeight = 1f, friendlyVIPWeight = 0.025f, enemyVIPWeight = 1f, wallWeight = 0.0f, helpWeight = 0f, pathWeight = 0f;
 
 	//creates a Dictionary to track walls which should be avoided
 	public Dictionary<int, GameObject> wallObjects = new Dictionary<int, GameObject> ();
@@ -85,7 +85,7 @@ public class AILogic : MonoBehaviour
 		Vector3[] combinedHeadings = {
 			toFriends,
 			toEnemies,
-			awayFromWalls,
+			awayFromWalls=-awayFromWalls,
 			toFriendlyVIP,
 			toEnemyVIP,
 			needHelp,
@@ -137,10 +137,28 @@ public class AILogic : MonoBehaviour
 		Gizmos.DrawRay (transform.position, toEnemies);
 		Gizmos.color = Color.green;
 		Gizmos.DrawRay (transform.position, toFriends);
-//		Gizmos.color = Color.blue;
-//		Gizmos.DrawRay (transform.position, toFriendlyVIP);
-		Gizmos.color = Color.black;
+		Gizmos.color = Color.blue;
+		Gizmos.DrawRay (transform.position, toFriendlyVIP);
+		Gizmos.color = Color.cyan;
 		Gizmos.DrawRay (transform.position, awayFromWalls);
+
+		Gizmos.color = Color.red;
+		Gizmos.DrawRay (transform.position, toEnemyVIP);
+
+		Gizmos.color = Color.yellow;
+		Gizmos.DrawRay (transform.position, needHelp);
+
+		Gizmos.color = Color.grey;
+		Gizmos.DrawRay (transform.position, pathNodeHeading);
+
+
+		/*	toFriends,
+			toEnemies,
+			awayFromWalls=-awayFromWalls,
+			toFriendlyVIP,
+			toEnemyVIP,
+			needHelp,
+			pathNodeHeading*/
 	}
 
 	private Dictionary<int, Transform> enemyVIPSSpotted ()
