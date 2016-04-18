@@ -45,7 +45,7 @@ public class AILogic : MonoBehaviour
 	Vector3 toFriends, toEnemies, toFriendlyVIP, toEnemyVIP, awayFromWalls, needHelp, pathNodeHeading;
 	public Vector3 velocity;
 
-	public float friendWeight = 0.5f, enemyWeight = 1f, friendlyVIPWeight = 0.025f, enemyVIPWeight = 1f, wallWeight = 0.0f, helpWeight = 0f, pathWeight = 0f;
+	public float friendWeight = 0.5f, enemyWeight = 1f, friendlyVIPWeight = 0.025f, enemyVIPWeight = 1f, wallWeight = 0.5f, helpWeight = 0.25f, pathWeight = 0.75f;
 
 	//creates a Dictionary to track walls which should be avoided
 	public Dictionary<int, GameObject> wallObjects = new Dictionary<int, GameObject> ();
@@ -85,7 +85,7 @@ public class AILogic : MonoBehaviour
 		Vector3[] combinedHeadings = {
 			toFriends,
 			toEnemies,
-			awayFromWalls=-awayFromWalls,
+			awayFromWalls = -awayFromWalls,
 			toFriendlyVIP,
 			toEnemyVIP,
 			needHelp,
@@ -131,27 +131,24 @@ public class AILogic : MonoBehaviour
 		if (transform == null) {
 			return;
 		}
+		float scaleH = 10;
 		Gizmos.color = (Color.Lerp (Color.yellow, Color.blue, (1.0f * this.teamID / 3)));
-		Gizmos.DrawRay (transform.position, transform.forward * 10);
+		Gizmos.DrawRay (transform.position, transform.forward * scaleH);
 		Gizmos.color = Color.red;
-		Gizmos.DrawRay (transform.position, toEnemies);
+		Gizmos.DrawRay (transform.position, toEnemies * enemyWeight * scaleH);
 		Gizmos.color = Color.green;
-		Gizmos.DrawRay (transform.position, toFriends);
+		Gizmos.DrawRay (transform.position, toFriends * friendWeight * scaleH);
 		Gizmos.color = Color.blue;
-		Gizmos.DrawRay (transform.position, toFriendlyVIP);
-		Gizmos.color = Color.cyan;
-		Gizmos.DrawRay (transform.position, awayFromWalls);
-
+		Gizmos.DrawRay (transform.position, toFriendlyVIP * friendlyVIPWeight * scaleH);
+		Gizmos.color = Color.black;
+		Gizmos.DrawRay (transform.position, awayFromWalls * wallWeight * scaleH);
 		Gizmos.color = Color.red;
-		Gizmos.DrawRay (transform.position, toEnemyVIP);
-
+		Gizmos.DrawRay (transform.position, toEnemyVIP * enemyVIPWeight * scaleH);
 		Gizmos.color = Color.yellow;
-		Gizmos.DrawRay (transform.position, needHelp);
-
+		Gizmos.DrawRay (transform.position, needHelp * helpWeight * scaleH);
 		Gizmos.color = Color.grey;
-		Gizmos.DrawRay (transform.position, pathNodeHeading);
-
-
+		Gizmos.DrawRay (transform.position, pathNodeHeading * pathWeight * pathWeight);
+		// public float friendWeight = 0.5f, enemyWeight = 1f, friendlyVIPWeight = 0.025f, enemyVIPWeight = 1f, wallWeight = 0.0f, helpWeight = 0f, pathWeight = 0f;
 		/*	toFriends,
 			toEnemies,
 			awayFromWalls=-awayFromWalls,
