@@ -52,12 +52,13 @@ public class Create_Teams : MonoBehaviour {
 		}
     }
 
-	private void createVIP (int i)
+	private void createVIP (int team)
 	{
-		Transform v = (Transform)Instantiate (VIPPrefab, teamStartPositions [i], Quaternion.identity);    //instantiate a VIP for this team
-		v.GetComponent<Renderer> ().material.color = teamColours [i];                                     //set the VIP's color
-		v.tag = "VIP" + i.ToString ();                                                                   //set the VIP's tag
-		VIPs [i] = v;
+		Transform v = (Transform)Instantiate (VIPPrefab, teamStartPositions [team], Quaternion.identity);    //instantiate a VIP for this team
+		v.GetComponent<Renderer> ().material.color = teamColours [team];                                     //set the VIP's color
+		v.tag = "VIP" + team.ToString ();                                                                    //set the VIP's tag
+		VIPs [team] = v;
+
 		for (int j = 0; j < numTeams; j++) {
 			visibleVIPs [j].Add (v, false);
 		}
@@ -65,7 +66,7 @@ public class Create_Teams : MonoBehaviour {
 		Pathing pth = v.GetComponent<Pathing> ();
 		//GameObject pathNodes = GameObject.Find ("VIPpath" + i);
 		//print(i);
-		GameObject pathNodes = GameObject.Find ("/VIPpath" + i);
+		GameObject pathNodes = GameObject.Find ("/VIPpath" + team);
 		//print(pathNodes);
 		Transform[] nodes = pathNodes.GetComponentsInChildren<Transform> ();
 		// !!!! k=1, because i think the parent transform will be included (a bad location).
@@ -97,9 +98,9 @@ public class Create_Teams : MonoBehaviour {
             visibleEnemies[i].Clear();
             foreach (KeyValuePair<int, Transform> player in teamRosters[i]) {               //for each player on that team
                 for (int j = 0; j < numTeams && j != i; j++) {                              //for each enemy team
-/*                    foreach (Transform enemyVIP in VIPs) {                                  //for each enemy VIP -- currently returning "Reference not set to instance of an object error"
+                    foreach (Transform enemyVIP in VIPs[i]) {                                  //for each enemy VIP -- currently returning "Reference not set to instance of an object error"
                         myLineOfSight(player.Value, enemyVIP);
-                    } */
+                    }
                     foreach (KeyValuePair<int, Transform> enemy in teamRosters[j]) {         //for each player on the enemy team
                         myLineOfSight(player.Value, enemy.Value);
                     }
@@ -118,16 +119,16 @@ public class Create_Teams : MonoBehaviour {
                 RaycastHit hit;                                             //create a raycast
                 if (Physics.Raycast(player.position, direction.normalized, out hit, viewDistance * 1.1f)) {  //shoot the ray towards the enemy
                     if (hit.transform.tag.Equals(enemyTag)) {               //if the ray hits the player on the enemy team
-                        //if (enemy.tag.Contains("VIP")) {
-                          //  Debug.Log("VIP located");
-                          //  visibleVIPs[playerTeamID][enemy] = true;
-                           // return;
-                        //} 
-                        //else { 
+                        if (enemy.tag.Contains("VIP")) {
+                            Debug.Log("VIP located");
+                            visibleVIPs[playerTeamID][enemy] = true;
+                            return;
+                        } 
+                        else { 
                             int key = hit.transform.GetComponent<AILogic>().myID;
                             if (!visibleEnemies[playerTeamID].ContainsKey(key)) {
                                 visibleEnemies[playerTeamID].Add(key, hit.transform);
-                          //  }
+                            }
                         }
                     }
                 }

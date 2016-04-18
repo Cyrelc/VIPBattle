@@ -39,6 +39,16 @@ public class Interaction : MonoBehaviour {
 					//Debug.Log (target);
 				}
 		}
+        foreach (KeyValuePair<Transform, bool> vip in controller.visibleVIPs[transform.GetComponent<AILogic>().teamID]) {
+            if (vip.Value) {
+                distance = Vector3.Distance(transform.position, vip.Key.position);
+                if (distance <= range) {
+                    // if the target is within the assigned range, then we can attack it, so assign it as the target
+                    target = vip.Key.gameObject;
+                    //Debug.Log (target);
+                }
+            }
+        }
 		if (target != null) {
 			// if we have the target, then we can damage it by accessing its hp value and subtracting our damage from it
 			if (target.tag.Contains ("VIP"))
