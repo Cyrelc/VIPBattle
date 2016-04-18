@@ -35,7 +35,7 @@ public class AILogic : MonoBehaviour
 	//the radius in which to check the location of your allies, this may increase over time while in searching mode
 
 	//maximum, minimum, and base speeds. Base speed is random, so some boids are just naturally faster than others as a base
-	public static float minSpeed = 1, maxSpeed = 400, baseSpeed = 10;
+	public static float minSpeed = 1, maxSpeed = 20, baseSpeed = 10;
 	public static float accelerationForce = 10f, headingScaleSpeed = 10;
 
 	//maximum rotation values
