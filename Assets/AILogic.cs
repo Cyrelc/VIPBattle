@@ -45,7 +45,7 @@ public class AILogic : MonoBehaviour
 	Vector3 toFriends, toEnemies, toFriendlyVIP, toEnemyVIP, awayFromWalls, needHelp, pathNodeHeading;
 	public Vector3 velocity;
 
-	public float friendWeight = 0.5f, enemyWeight = 1f, friendlyVIPWeight = 0.025f, enemyVIPWeight = 1f, wallWeight = 1f, helpWeight = 1f, pathWeight = 2f;
+	public float friendWeight = 0.5f, enemyWeight = 1f, friendlyVIPWeight = 0.025f, enemyVIPWeight = 1f, wallWeight = -0.5f, helpWeight = 1f, pathWeight = 2f;
 
 	//creates a Dictionary to track walls which should be avoided
 	public Dictionary<int, GameObject> wallObjects = new Dictionary<int, GameObject> ();
@@ -73,7 +73,7 @@ public class AILogic : MonoBehaviour
 	{
 		toFriends = findFriendlyVector ();                                       //find the heading towards allies
 		toEnemies = findEnemyVector ();                                          //find the heading towards visible enemies ONLY
-		awayFromWalls = findHeadingByTargetsLinear (wallObjects);                             //repel from walls within range
+		awayFromWalls = findHeadingByTargetsLinear (wallObjects).normalized;                             //repel from walls within range
 		// pathing node depends on pathing script. This case checks if it exists.
 		if (pathController != null) {
 			pathNodeHeading = pathController.GetPathDirectionNow ();
@@ -94,7 +94,7 @@ public class AILogic : MonoBehaviour
 		float[] combinedWeights = {
 			friendWeight,
 			enemyWeight,
-			-wallWeight,
+			wallWeight,
 			friendlyVIPWeight,
 			enemyVIPWeight,
 			helpWeight,
@@ -265,10 +265,15 @@ public class AILogic : MonoBehaviour
 	private Vector3 combinedHeading (Vector3[] headings, float[] weights)
 	{
 		Vector3 result = Vector3.zero;
+		// normalize weights.
+		float weightSum = 0;
+		foreach (float weight in weights) {
+			weightSum += weight;
+		}
 		for (int i = 0; i < headings.Length; i++) {
 			result += headings [i] * weights [i];
 		}
-		return result;
+		return result / weightSum;
 	}
 
 	protected virtual Vector3 Steer (Vector3 target, bool slowDown)
