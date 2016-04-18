@@ -78,7 +78,7 @@ public class AILogic : MonoBehaviour
 		if (pathController != null) {
 			pathNodeHeading = pathController.GetPathDirectionNow ();
 		}
-		toFriendlyVIP = controller.VIPs [teamID].position - transform.position;  //find the heading towards my VIP
+		toFriendlyVIP = controller.VIPs[teamID].position - transform.position;   //find the heading towards my VIP
 		needHelp = findCallingForHelpVector ();                                  //find any allies calling for help
 		toEnemyVIP = findEnemyVIPVector ();
 
@@ -232,7 +232,7 @@ public class AILogic : MonoBehaviour
 		foreach (KeyValuePair<int, GameObject> wall in wallObjects) {
 			float distance = Vector3.Distance (transform.position, wall.Value.transform.position);
 			wallSum += (1 / distance) * (wall.Value.transform.position - transform.position);
-			if ((transform.position - wall.Value.transform.position).magnitude < 1)
+			if ((transform.position - wall.Value.transform.position).magnitude < 5)
 				wallWeight += 0.01f;
 		}
 		wallSum = wallObjects.Count > 0 ? wallSum / wallObjects.Count : wallSum;

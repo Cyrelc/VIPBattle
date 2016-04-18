@@ -16,8 +16,7 @@ public class Create_Teams : MonoBehaviour {
     public Vector3[] teamStartPositions = new Vector3[2];
     public Color[] teamColours = new[] { Color.red, Color.blue, Color.green, Color.yellow };
     public Transform playerPrefab, VIPPrefab;
-    //public Transform[] VIPs = new Transform[4];
-	public List<Transform> VIPs = new List<Transform>();
+	public Transform[] VIPs = { null, null, null, null };
     public List<Dictionary<int, Transform>> teamRosters;
     public Dictionary<int, Transform>[] callingForHelp = new Dictionary<int, Transform>[4];
     public Dictionary<Transform, bool>[] visibleVIPs = new Dictionary<Transform, bool>[4];
@@ -41,16 +40,20 @@ public class Create_Teams : MonoBehaviour {
         }
         playerPrefab.gameObject.SetActive(false); // disable the prefabs
         VIPPrefab.gameObject.SetActive(false);
-        VIPCount = VIPs.Count;
 	}
 	
 	// Update is called once per frame
 	void FixedUpdate () {
         enemiesInSight();   //calculates, for each team, which enemies are in line of sight (therefore can be taken into account for swarm movement)
-		if (VIPs.Count <= VIPCount - numTeams + 1) {
-			Debug.Log ("Game ended");
-			Application.Quit ();
-		}
+        int livingCount = 0;
+        foreach (Transform vip in VIPs) {
+            if (vip != null)
+                livingCount++;
+        }
+        if (livingCount <= 1) {
+            Debug.Log("Game ended");
+            Time.timeScale = 0;
+        }
     }
 
 	private void createVIP (int team)
@@ -59,7 +62,7 @@ public class Create_Teams : MonoBehaviour {
 		v.GetComponent<Renderer> ().material.color = teamColours [team];                                     //set the VIP's color
 		v.tag = "VIP" + team.ToString ();                                                                    //set the VIP's tag
         v.GetComponent<AILogic>().teamID = team;
-		VIPs [team] = v;
+		VIPs[team] = v;
         for (int i = 0; i < numTeams; i++) {
             visibleVIPs[i].Add(v, false);
         }
@@ -112,9 +115,6 @@ public class Create_Teams : MonoBehaviour {
     }
 
     private void myLineOfSight(Transform player, Transform enemy) {
-        //        string enemyTag = enemy.transform.tag;
-        //        if (enemy.tag.Contains("VIP"))
-        //            Debug.Log("Checking VIP");
         if (enemy != null) {
             int playerTeamID = player.GetComponent<AILogic>().teamID;
             Vector3 direction = enemy.position - player.position;               //calculate the distance to the enemy

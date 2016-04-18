@@ -3,13 +3,15 @@ using System.Collections;
 
 public class VIPVitals : MonoBehaviour {
 
-	//Handles VIP health and existence in game
+    //Handles VIP health and existence in game
+    private AILogic logic;
 
 	public int hp; 
 	private Create_Teams CT;
 	// Use this for initialization
 	void Start () {
 		hp = 30; // Hp of VIPs 
+        logic = transform.GetComponent<AILogic>();
 		CT = GameObject.Find ("controller").GetComponent<Create_Teams> (); // the accessor for the list we need to remove VIPs from when they are destroyed
 	}
 	
@@ -17,10 +19,8 @@ public class VIPVitals : MonoBehaviour {
 	void Update () {
 		if (hp <= 0) {
             // if this VIP is dead
-            Debug.Log("before: " + CT.VIPs.Count);
-			CT.VIPs.Remove (transform); // remove from list of VIPs for win condition
+			CT.VIPs[logic.teamID] = null; // remove from list of VIPs for win condition
 			Destroy (transform.gameObject); // destroy this object
-            Debug.Log("before: " + CT.VIPs.Count);
         }
     }
 }
