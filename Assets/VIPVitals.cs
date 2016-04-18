@@ -16,9 +16,11 @@ public class VIPVitals : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		if (hp <= 0) {
-			// if this VIP is dead
+            // if this VIP is dead
+            Debug.Log("before: " + CT.VIPs.Count);
 			CT.VIPs.Remove (transform); // remove from list of VIPs for win condition
 			Destroy (transform.gameObject); // destroy this object
-		}
-	}
+            Debug.Log("before: " + CT.VIPs.Count);
+        }
+    }
 }

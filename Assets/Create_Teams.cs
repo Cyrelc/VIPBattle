@@ -12,7 +12,7 @@ public class Create_Teams : MonoBehaviour {
      * team2StartPos- position which defines the team 2 start location
     */
 
-    public int numTeams = 2, teamSize = 20, startRadius = 20;
+    public int numTeams = 2, teamSize = 20, startRadius = 20, VIPCount = 0;
     public Vector3[] teamStartPositions = new Vector3[2];
     public Color[] teamColours = new[] { Color.red, Color.blue, Color.green, Color.yellow };
     public Transform playerPrefab, VIPPrefab;
@@ -41,12 +41,13 @@ public class Create_Teams : MonoBehaviour {
         }
         playerPrefab.gameObject.SetActive(false); // disable the prefabs
         VIPPrefab.gameObject.SetActive(false);
+        VIPCount = VIPs.Count;
 	}
 	
 	// Update is called once per frame
 	void FixedUpdate () {
         enemiesInSight();   //calculates, for each team, which enemies are in line of sight (therefore can be taken into account for swarm movement)
-		if (VIPs.Count <= 1) {
+		if (VIPs.Count <= VIPCount - numTeams + 1) {
 			Debug.Log ("Game ended");
 			Application.Quit ();
 		}
@@ -57,11 +58,11 @@ public class Create_Teams : MonoBehaviour {
 		Transform v = (Transform)Instantiate (VIPPrefab, teamStartPositions [team], Quaternion.identity);    //instantiate a VIP for this team
 		v.GetComponent<Renderer> ().material.color = teamColours [team];                                     //set the VIP's color
 		v.tag = "VIP" + team.ToString ();                                                                    //set the VIP's tag
+        v.GetComponent<AILogic>().teamID = team;
 		VIPs [team] = v;
-
-		for (int j = 0; j < numTeams; j++) {
-			visibleVIPs [j].Add (v, false);
-		}
+        for (int i = 0; i < numTeams; i++) {
+            visibleVIPs[i].Add(v, false);
+        }
 		// path nodes
 		Pathing pth = v.GetComponent<Pathing> ();
 		//GameObject pathNodes = GameObject.Find ("VIPpath" + i);
@@ -72,7 +73,7 @@ public class Create_Teams : MonoBehaviour {
 		// !!!! k=1, because i think the parent transform will be included (a bad location).
 		for (int k = 1; k < nodes.Length; k++) {
 			pth.insertPathNode (nodes [k].gameObject);
-			print (k + ": " + nodes [k].gameObject.transform.position);
+//			print (k + ": " + nodes [k].gameObject.transform.position);
 		}
 	}
 
@@ -98,8 +99,9 @@ public class Create_Teams : MonoBehaviour {
             visibleEnemies[i].Clear();
             foreach (KeyValuePair<int, Transform> player in teamRosters[i]) {               //for each player on that team
                 for (int j = 0; j < numTeams && j != i; j++) {                              //for each enemy team
-                    foreach (Transform enemyVIP in VIPs[i]) {                                  //for each enemy VIP -- currently returning "Reference not set to instance of an object error"
-                        myLineOfSight(player.Value, enemyVIP);
+                    foreach (Transform enemyVIP in VIPs) {                                  //for each enemy VIP
+                        if (enemyVIP != null && enemyVIP.transform.GetComponent<AILogic>().teamID != player.Value.transform.GetComponent<AILogic>().teamID)
+                            myLineOfSight(player.Value, enemyVIP);
                     }
                     foreach (KeyValuePair<int, Transform> enemy in teamRosters[j]) {         //for each player on the enemy team
                         myLineOfSight(player.Value, enemy.Value);
@@ -110,24 +112,28 @@ public class Create_Teams : MonoBehaviour {
     }
 
     private void myLineOfSight(Transform player, Transform enemy) {
-        string enemyTag = enemy.gameObject.tag;
-        int playerTeamID = player.GetComponent<AILogic>().teamID;
-        Vector3 direction = enemy.position - player.position;               //calculate the distance to the enemy
-        if (direction.magnitude < viewDistance) {                           //if the enemy is within range
-            float angle = Vector3.Angle(player.forward, direction);         //calculate the angle between the way player is looking, and the position of the enemy
-            if (angle < fieldOfViewAngle / 2) {                             //if the enemy is within field of view
-                RaycastHit hit;                                             //create a raycast
-                if (Physics.Raycast(player.position, direction.normalized, out hit, viewDistance * 1.1f)) {  //shoot the ray towards the enemy
-                    if (hit.transform.tag.Equals(enemyTag)) {               //if the ray hits the player on the enemy team
-                        if (enemy.tag.Contains("VIP")) {
-                            Debug.Log("VIP located");
-                            visibleVIPs[playerTeamID][enemy] = true;
-                            return;
-                        } 
-                        else { 
-                            int key = hit.transform.GetComponent<AILogic>().myID;
-                            if (!visibleEnemies[playerTeamID].ContainsKey(key)) {
-                                visibleEnemies[playerTeamID].Add(key, hit.transform);
+        //        string enemyTag = enemy.transform.tag;
+        //        if (enemy.tag.Contains("VIP"))
+        //            Debug.Log("Checking VIP");
+        if (enemy != null) {
+            int playerTeamID = player.GetComponent<AILogic>().teamID;
+            Vector3 direction = enemy.position - player.position;               //calculate the distance to the enemy
+            if (direction.magnitude < viewDistance) {                           //if the enemy is within range
+                float angle = Vector3.Angle(player.forward, direction);         //calculate the angle between the way player is looking, and the position of the enemy
+                if (angle < fieldOfViewAngle / 2) {                             //if the enemy is within field of view
+                    RaycastHit hit;                                             //create a raycast
+                    if (Physics.Raycast(player.position, direction.normalized, out hit, viewDistance * 1.1f)) {  //shoot the ray towards the enemy
+                        if (hit.transform.tag.Equals(enemy.tag)) {               //if the ray hits the player on the enemy team
+                            Debug.Log(enemy.tag);
+                            if (enemy.tag.Length == 4) {
+                                Debug.Log("enemy VIP located");
+                                visibleVIPs[playerTeamID][enemy] = true;
+                                return;
+                            } else {
+                                int key = hit.transform.GetComponent<AILogic>().myID;
+                                if (!visibleEnemies[playerTeamID].ContainsKey(key)) {
+                                    visibleEnemies[playerTeamID].Add(key, hit.transform);
+                                }
                             }
                         }
                     }
