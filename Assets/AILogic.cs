@@ -39,7 +39,7 @@ public class AILogic : MonoBehaviour
 	public static float accelerationForce = 10f, headingScaleSpeed = 10;
 
 	//maximum rotation values
-	public static float maxRotationSpeed = 10, rotationSpeed = 30;
+	public static float maxRotationSpeed = 10, rotationSpeed = 10;
 
 	//Vectors calculated towards or away from all relevent attractors
 	Vector3 toFriends, toEnemies, toFriendlyVIP, toEnemyVIP, awayFromWalls, needHelp, pathNodeHeading;
@@ -111,10 +111,10 @@ public class AILogic : MonoBehaviour
 		// critter speed is controlled by heading magnitude, and it is clamped within this range.
 		float headingMagnitude	=	newHeading.magnitude * baseSpeed;
 		headingMagnitude = Mathf.Clamp (headingMagnitude, minSpeed, maxSpeed);
-		newHeading.y	=	0;
+		//newHeading.y	=	rb.transform.position.y;
 
 		// movement
-		Vector3 smoothHeading = Vector3.Slerp (transform.forward, newHeading, Time.fixedDeltaTime * rotationSpeed);
+		Vector3 smoothHeading = Vector3.Slerp (rb.transform.forward, newHeading, Time.fixedDeltaTime * rotationSpeed);
 		rb.transform.LookAt (transform.position + smoothHeading);
 		rb.AddForce (newHeading.normalized * headingMagnitude * accelerationForce * Time.fixedDeltaTime, ForceMode.Acceleration);
 		// speed cap
