@@ -52,15 +52,28 @@ public class Create_Teams : MonoBehaviour {
 		}
     }
 
-    private void createVIP(int i) {
-        Transform v = (Transform)Instantiate(VIPPrefab, teamStartPositions[i], Quaternion.identity);    //instantiate a VIP for this team
-        v.GetComponent<Renderer>().material.color = teamColours[i];                                     //set the VIP's color
-        v.tag = "VIP" + i.ToString();                                                                   //set the VIP's tag
-        VIPs[i] = v;
-        for (int j = 0; j < numTeams; j++) {
-            visibleVIPs[j].Add(v, false);
-        }
-    }
+	private void createVIP (int i)
+	{
+		Transform v = (Transform)Instantiate (VIPPrefab, teamStartPositions [i], Quaternion.identity);    //instantiate a VIP for this team
+		v.GetComponent<Renderer> ().material.color = teamColours [i];                                     //set the VIP's color
+		v.tag = "VIP" + i.ToString ();                                                                   //set the VIP's tag
+		VIPs [i] = v;
+		for (int j = 0; j < numTeams; j++) {
+			visibleVIPs [j].Add (v, false);
+		}
+		// path nodes
+		Pathing pth = v.GetComponent<Pathing> ();
+		//GameObject pathNodes = GameObject.Find ("VIPpath" + i);
+		//print(i);
+		GameObject pathNodes = GameObject.Find ("/VIPpath" + i);
+		//print(pathNodes);
+		Transform[] nodes = pathNodes.GetComponentsInChildren<Transform> ();
+		// !!!! k=1, because i think the parent transform will be included (a bad location).
+		for (int k = 1; k < nodes.Length; k++) {
+			pth.insertPathNode (nodes [k].gameObject);
+			print (k + ": " + nodes [k].gameObject.transform.position);
+		}
+	}
 
     private void createPlayer(int team, int ID) {
         //create new member of team, within a certain radius of start position

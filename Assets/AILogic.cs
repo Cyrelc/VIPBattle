@@ -35,17 +35,17 @@ public class AILogic : MonoBehaviour
 	//the radius in which to check the location of your allies, this may increase over time while in searching mode
 
 	//maximum, minimum, and base speeds. Base speed is random, so some boids are just naturally faster than others as a base
-	public static float minSpeed = 1, maxSpeed = 400, baseSpeed = 10;
+	public static float minSpeed = 1, maxSpeed = 20, baseSpeed = 10;
 	public static float accelerationForce = 10f, headingScaleSpeed = 10;
 
 	//maximum rotation values
-	public static float maxRotationSpeed = 10, rotationSpeed = 30;
+	public static float maxRotationSpeed = 10, rotationSpeed = 10;
 
 	//Vectors calculated towards or away from all relevent attractors
 	Vector3 toFriends, toEnemies, toFriendlyVIP, toEnemyVIP, awayFromWalls, needHelp, pathNodeHeading;
 	public Vector3 velocity;
 
-	public float friendWeight = 0.5f, enemyWeight = 1f, friendlyVIPWeight = 0.025f, enemyVIPWeight = 1f, wallWeight = 1f, helpWeight = 1f, pathWeight = 0.0f;
+	public float friendWeight = 0.5f, enemyWeight = 1f, friendlyVIPWeight = 0.025f, enemyVIPWeight = 1f, wallWeight = 0.5f, helpWeight = 0.25f, pathWeight = 0.75f;
 
 	//creates a Dictionary to track walls which should be avoided
 	public Dictionary<int, GameObject> wallObjects = new Dictionary<int, GameObject> ();
@@ -73,7 +73,7 @@ public class AILogic : MonoBehaviour
 	{
 		toFriends = findFriendlyVector ();                                       //find the heading towards allies
 		toEnemies = findEnemyVector ();                                          //find the heading towards visible enemies ONLY
-		awayFromWalls = findHeadingByTargetsLinear (wallObjects);                             //repel from walls within range
+		awayFromWalls = findHeadingByTargetsLinear (wallObjects).normalized;                             //repel from walls within range
 		// pathing node depends on pathing script. This case checks if it exists.
 		if (pathController != null) {
 			pathNodeHeading = pathController.GetPathDirectionNow ();
@@ -85,7 +85,7 @@ public class AILogic : MonoBehaviour
 		Vector3[] combinedHeadings = {
 			toFriends,
 			toEnemies,
-			awayFromWalls,
+			awayFromWalls = -awayFromWalls,
 			toFriendlyVIP,
 			toEnemyVIP,
 			needHelp,
@@ -94,7 +94,7 @@ public class AILogic : MonoBehaviour
 		float[] combinedWeights = {
 			friendWeight,
 			enemyWeight,
-			-wallWeight,
+			wallWeight,
 			friendlyVIPWeight,
 			enemyVIPWeight,
 			helpWeight,
@@ -111,10 +111,10 @@ public class AILogic : MonoBehaviour
 		// critter speed is controlled by heading magnitude, and it is clamped within this range.
 		float headingMagnitude	=	newHeading.magnitude * baseSpeed;
 		headingMagnitude = Mathf.Clamp (headingMagnitude, minSpeed, maxSpeed);
-		newHeading.y	=	0;
+		//newHeading.y	=	rb.transform.position.y;
 
 		// movement
-		Vector3 smoothHeading = Vector3.Slerp (transform.forward, newHeading, Time.fixedDeltaTime * rotationSpeed);
+		Vector3 smoothHeading = Vector3.Slerp (rb.transform.forward, newHeading, Time.fixedDeltaTime * rotationSpeed);
 		rb.transform.LookAt (transform.position + smoothHeading);
 		rb.AddForce (newHeading.normalized * headingMagnitude * accelerationForce * Time.fixedDeltaTime, ForceMode.Acceleration);
 		// speed cap
@@ -131,16 +131,31 @@ public class AILogic : MonoBehaviour
 		if (transform == null) {
 			return;
 		}
+		float scaleH = 10;
 		Gizmos.color = (Color.Lerp (Color.yellow, Color.blue, (1.0f * this.teamID / 3)));
-		Gizmos.DrawRay (transform.position, transform.forward * 10);
+		Gizmos.DrawRay (transform.position, transform.forward * scaleH);
 		Gizmos.color = Color.red;
-		Gizmos.DrawRay (transform.position, toEnemies);
+		Gizmos.DrawRay (transform.position, toEnemies * enemyWeight * scaleH);
 		Gizmos.color = Color.green;
-		Gizmos.DrawRay (transform.position, toFriends);
-//		Gizmos.color = Color.blue;
-//		Gizmos.DrawRay (transform.position, toFriendlyVIP);
+		Gizmos.DrawRay (transform.position, toFriends * friendWeight * scaleH);
+		Gizmos.color = Color.blue;
+		Gizmos.DrawRay (transform.position, toFriendlyVIP * friendlyVIPWeight * scaleH);
 		Gizmos.color = Color.black;
-		Gizmos.DrawRay (transform.position, awayFromWalls);
+		Gizmos.DrawRay (transform.position, awayFromWalls * wallWeight * scaleH);
+		Gizmos.color = Color.red;
+		Gizmos.DrawRay (transform.position, toEnemyVIP * enemyVIPWeight * scaleH);
+		Gizmos.color = Color.yellow;
+		Gizmos.DrawRay (transform.position, needHelp * helpWeight * scaleH);
+		Gizmos.color = Color.grey;
+		Gizmos.DrawRay (transform.position, pathNodeHeading * pathWeight * pathWeight);
+		// public float friendWeight = 0.5f, enemyWeight = 1f, friendlyVIPWeight = 0.025f, enemyVIPWeight = 1f, wallWeight = 0.0f, helpWeight = 0f, pathWeight = 0f;
+		/*	toFriends,
+			toEnemies,
+			awayFromWalls=-awayFromWalls,
+			toFriendlyVIP,
+			toEnemyVIP,
+			needHelp,
+			pathNodeHeading*/
 	}
 
 	private Dictionary<int, Transform> enemyVIPSSpotted ()
@@ -265,10 +280,15 @@ public class AILogic : MonoBehaviour
 	private Vector3 combinedHeading (Vector3[] headings, float[] weights)
 	{
 		Vector3 result = Vector3.zero;
+		// normalize weights.
+		float weightSum = 0;
+		foreach (float weight in weights) {
+			weightSum += weight;
+		}
 		for (int i = 0; i < headings.Length; i++) {
 			result += headings [i] * weights [i];
 		}
-		return result;
+		return result / weightSum;
 	}
 
 	protected virtual Vector3 Steer (Vector3 target, bool slowDown)
