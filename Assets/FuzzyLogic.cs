@@ -30,20 +30,20 @@ public class FuzzyLogic : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
         healthConfidence = -grade(interaction.hp, healthRunAway, healthSafeToAttack);                       //calculate fuzzy value for player health
-        logic.enemyWeight = confidence() + healthConfidence;                                                //calculate enemyWeight pull value (see AILogic)
+        logic.enemyWeight = confidence() + healthConfidence * 3;                                                //calculate enemyWeight pull value (see AILogic)
         int VIPDefenderCount = 0, VIPAttackerCount = 0;                                                     //counters for the number of people defending/attacking your VIP
         /* Count the number of enemies threatening for VIP, and the number of allies defending him
          */
         foreach (KeyValuePair<int, Transform> ally in controller.teamRosters[logic.teamID]) {           
-            if (Vector3.Distance(ally.Value.position, controller.VIPs[logic.teamID].position) < localRange)
+            if (Vector3.Distance(ally.Value.position, controller.VIPs[ally.Value.GetComponent<AILogic>().teamID].position) < localRange)
                 VIPDefenderCount++;
         }
         foreach (KeyValuePair<int, Transform> enemy in controller.visibleEnemies[logic.teamID]) {
             if (Vector3.Distance(enemy.Value.position, controller.VIPs[logic.teamID].position) < localRange)
                 VIPAttackerCount++;
         }
-        logic.friendlyVIPWeight = reverseGrade((float)VIPDefenderCount, 0f, (float)VIPAttackerCount);
-        logic.enemyVIPWeight = confidence() + healthConfidence;
+        logic.friendlyVIPWeight = reverseGrade((float)VIPDefenderCount, 0f, (float)VIPAttackerCount) / (controller.teamSize / 10);
+        logic.enemyVIPWeight = confidence() + healthConfidence * 5;
         if (logic.friendWeight > 0f && controller.visibleEnemies[logic.teamID].Count == 0)
             logic.friendWeight -= 0.01f;
         else if (logic.friendWeight < 1)
@@ -61,7 +61,7 @@ public class FuzzyLogic : MonoBehaviour {
             if (Vector3.Distance(transform.position, enemy.Value.position) < localRange)
                 enemyCount++;
         }
-        float vsConfidence = grade(allyCount, 0f, enemyCount) < 1 ? grade(allyCount, 0f, enemyCount) : 1f;
+        float vsConfidence = reverseGrade(allyCount, 0f, enemyCount);
         if (vsConfidence < 0.5) {                                                                       //if you are outnumbered more than 2 to 1, call for help
             controller.callingForHelp[logic.teamID].Add(logic.myID, transform);
         }
